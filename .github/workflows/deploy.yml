@@ -1,28 +1,25 @@
 name: Build and Deploy
+
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+
 jobs:
-  build-and-deploy:
+  build:
+
     runs-on: ubuntu-latest
-    concurrency: ci-${{github.ref}}
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Configure Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: '18.x'
-
-      - name: Install
-        run: |
-          npm ci
-          npm run build
-
-      - name: Deploy
-        uses: xenouk/github-pages-deploy-action@v4
-        with:
-          folder: build
-          branch: build
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run deploy
